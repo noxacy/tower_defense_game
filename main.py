@@ -4,8 +4,8 @@ import os
 import asyncio
 
 pygame.init()
-W, H = 1280, 720
-w = pygame.display.set_mode((W, H))
+W, H = 1920, 1080
+w = pygame.display.set_mode((W, H), pygame.SCALED)
 running = True
 clock = pygame.time.Clock()
 maxfps = 60
