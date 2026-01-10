@@ -4,24 +4,23 @@ import os
 import asyncio
 
 pygame.init()
-# Use a slightly smaller fixed resolution for better compatibility
-W, H = 1280, 720 
-w = pygame.display.set_mode((W, H))
-
+Info = pygame.display.Info()
+W, H = Info.current_w, Info.current_h
+w = pygame.display.set_mode((W, H), pygame.FULLSCREEN)
 running = True
 clock = pygame.time.Clock()
 maxfps = 60
 gui = 0
-
-# Initialize fonts
 font1 = pygame.font.SysFont(None, 50)
 font2 = pygame.font.SysFont(None, 35)
 font3 = pygame.font.SysFont(None, 20)
-
-# Declare these as None or empty initially
-towerTemp = {}
-enemyTemp = {}
-route = {}
+mx, my = 0, 0
+cache = {}
+with open("templates.json", "r") as f:
+    full = json.load(f)
+    towerTemp = full["towers"]
+    enemyTemp = full["enemies"]
+    route = full["route"]
 
 class Base:
     def __init__(self):
@@ -476,38 +475,15 @@ def draw(dt):
     pygame.display.flip()
 
 async def main():
-    global running, towerTemp, enemyTemp, route, game, base
-    
-    # 1. Load JSON inside the async function
-    try:
-        with open("templates.json", "r") as f:
-            full = json.load(f)
-            towerTemp = full["towers"]
-            enemyTemp = full["enemies"]
-            route = full["route"]
-    except Exception as e:
-        print(f"JSON Load Error: {e}")
-        # Create a dummy route to prevent crashing if file fails
-        route = {"wave1": []} 
-
-    # 2. Re-initialize game objects to ensure they see the loaded route
-    game = Game()
-    base = Base()
-
-    # 3. The Main Loop
+    global running 
     while running:
-        # Calculate delta time
         dt = clock.tick(maxfps) / 1000.0
-        
-        # Run game steps
         game.next_ev(dt)
         events(dt)
         draw(dt)
-        
-        # Yield to the browser
         await asyncio.sleep(0)
 
-# Run once and ONLY once
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 pygame.quit()
+
+#a
