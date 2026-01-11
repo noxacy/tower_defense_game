@@ -28,7 +28,7 @@ jobs:
           # 3. Build the game
           - name: Build Tower Defense
             run: |
-              python -m pygbag --build -td/
+              python -m pygbag --build td/
               
           # 4. Assemble the Arcade (Menu + Game)
           - name: Prepare Deployment Folder
