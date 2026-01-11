@@ -93,16 +93,28 @@
     </div>
 
     <script>
-        var elem = document.getElementById("gameArea");
-        function openFullscreen() {
-          if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-          } else if (elem.webkitRequestFullscreen) { /* Safari */
-            elem.webkitRequestFullscreen();
-          } else if (elem.msRequestFullscreen) { /* IE11 */
-            elem.msRequestFullscreen();
-          }
+    var elem = document.getElementById("gameArea");
+
+    async function openFullscreen() {
+        try {
+            // 1. Enter Fullscreen Mode
+            if (elem.requestFullscreen) {
+                await elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                await elem.webkitRequestFullscreen();
+            }
+
+            // 2. Attempt to lock orientation to landscape
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('landscape').catch(function(error) {
+                    console.log("Orientation lock failed: " + error);
+                    // Usually fails on desktop, which is fine!
+                });
+            }
+        } catch (err) {
+            console.error("Error attempting to enable full-screen:", err);
         }
+    }
     </script>
 
 </body>
