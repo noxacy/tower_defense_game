@@ -194,7 +194,6 @@ async def main():
         if a_r.collidepoint(m_pos): is_h = True
         screen.blit(s_akif, a_r)
         
-        # Binalar ve İmleç
         for i, b in enumerate(game.buildings):
             if pygame.Rect(b[5], b[6], 350, 100).collidepoint(m_pos): is_h = True
             game.building(i, b[5], b[6])
