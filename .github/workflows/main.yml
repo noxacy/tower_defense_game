@@ -16,16 +16,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pygbag black
+          python -m pip install pygbag==0.8.6
           python -m pip install numpy
 
       - name: Build and Organize All Games
         run: |
+          rm -rf */build
+          rm -rf deploy
           mkdir -p deploy
           cp index.html ads.txt privacy.html terms.html about.html contact.html deploy/
           
