@@ -49,14 +49,14 @@ jobs:
               mkdir -p "deploy/$dirname"
               cp -r "$dirname/build/web/"* "deploy/$dirname/"
 
-              for HTML in deploy/$dirname/*.html; do
-                [ -f "$HTML" ] || continue
+              # 🔥 TÜM HTML DOSYALARINI PATCHLE
+              find "deploy/$dirname" -name "*.html" | while read HTML; do
                 echo "Patching $HTML"
 
                 # DOCTYPE (Quirks Mode FIX)
                 sed -i '1{/^<!DOCTYPE html>/!s/^/<!DOCTYPE html>\n/}' "$HTML"
 
-                # navigator.userAgentData FIX (EN ÜSTE!)
+                # navigator.userAgentData FIX (SATIR 1)
                 sed -i '1i\
                 <script>\
                 if(!navigator.userAgentData){navigator.userAgentData={mobile:false};}\
