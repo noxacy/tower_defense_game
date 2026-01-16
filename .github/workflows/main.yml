@@ -10,8 +10,7 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
-    steps:
+    steps: 
       - uses: actions/checkout@v3
 
       - name: Set up Python 3.11
@@ -25,17 +24,18 @@ jobs:
           python -m pip install pygbag==0.9.0
           python -m pip install numpy
 
-      - name: Build and Organize All Games
+      - name: Prepare deploy folder
         run: |
-          rm -rf */build
           rm -rf deploy
           mkdir -p deploy
+          # Root sayfa ve statik dosyaları kopyala
           cp index.html ads.txt privacy.html terms.html about.html contact.html deploy/
 
-          
-          # Oyun klasörlerini dolaş
+      - name: Build and patch games
+        run: |
           for dir in */; do
             dirname=${dir%/}
+            
             if [ "$dirname" == "deploy" ] || [ "$dirname" == ".github" ]; then
               continue
             fi
@@ -43,33 +43,26 @@ jobs:
             if [ -f "$dirname/main.py" ]; then
               echo "Building game in folder: $dirname"
 
+              # Build game
               python -m pygbag --build "$dirname/"
 
               mkdir -p "deploy/$dirname"
               cp -r "$dirname/build/web/"* "deploy/$dirname/"
 
-              # Resimleri ve _play.html kopyala
-              cp "$dirname"/*.png "deploy/$dirname/" 2>/dev/null || true
-              cp "$dirname"/*.jpg "deploy/$dirname/" 2>/dev/null || true
-              if [ -f "$dirname/${dirname}_play.html" ]; then
-                cp "$dirname/${dirname}_play.html" "deploy/$dirname/"
+              # Patch JS otomatik olarak
+              PATCH_FILE="deploy/$dirname/index.html"
+              if [ -f "$PATCH_FILE" ]; then
+                sed -i '1i <!DOCTYPE html>' "$PATCH_FILE"
+                sed -i "/<\/body>/i <script>\nif(typeof navigator.userAgentData==='undefined'){navigator.userAgentData={mobile:false};}\nwindow.addEventListener('load',()=>{if(typeof py_init==='function'){py_init();}});\n</script>" "$PATCH_FILE"
               fi
 
-              # --- PATCH: index.html ---
-              INDEX_FILE="deploy/$dirname/index.html"
-              if [ -f "$INDEX_FILE" ]; then
-                TMP_FILE="$INDEX_FILE.tmp"
-                echo "<!DOCTYPE html>" > "$TMP_FILE"
-                echo "<script>
-                if (typeof navigator.userAgentData === 'undefined') {
-                    navigator.userAgentData = { mobile: false };
-                }
-                window.addEventListener('load', () => {
-                    if (typeof py_init === 'function') { py_init(); }
-                });
-                </script>" >> "$TMP_FILE"
-                tail -n +1 "$INDEX_FILE" >> "$TMP_FILE"
-                mv "$TMP_FILE" "$INDEX_FILE"
+              # Klasördeki görselleri de kopyala
+              cp "$dirname"/*.png "deploy/$dirname/" 2>/dev/null || true
+              cp "$dirname"/*.jpg "deploy/$dirname/" 2>/dev/null || true
+
+              # Oyun-specific HTML varsa kopyala
+              if [ -f "$dirname/${dirname}_play.html" ]; then
+                cp "$dirname/${dirname}_play.html" "deploy/$dirname/"
               fi
             fi
           done
