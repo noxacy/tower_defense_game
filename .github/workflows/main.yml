@@ -53,15 +53,20 @@ jobs:
               find "deploy/$dirname" -name "*.html" | while read HTML; do
                 echo "Patching $HTML"
 
-                # DOCTYPE (Quirks Mode FIX)
-                sed -i '1{/^<!DOCTYPE html>/!s/^/<!DOCTYPE html>\n/}' "$HTML"
+                # 1️⃣ Her şeyi temizle (eski yanlış eklemeler dahil)
+                sed -i '/navigator.userAgentData/d' "$HTML"
+                sed -i '/<!DOCTYPE html>/d' "$HTML"
 
-                # navigator.userAgentData FIX (SATIR 1)
-                sed -i '1i\
+                # 2️⃣ DOCTYPE MUTLAKA 1. SATIR
+                sed -i '1i<!DOCTYPE html>' "$HTML"
+
+                # 3️⃣ Script DOCTYPE'TAN SONRA
+                sed -i '2i\
                 <script>\
                 if(!navigator.userAgentData){navigator.userAgentData={mobile:false};}\
                 </script>' "$HTML"
               done
+
 
               # Assets
               cp "$dirname"/*.png "deploy/$dirname/" 2>/dev/null || true
