@@ -514,7 +514,7 @@ def events(dt):
                                     on_road = True
                                     break
 
-                            if can_place and not on_road:
+                            if can_place and not on_road and game.money >= phtower.cost:
                                 towers.append(Tower(tx, ty, phtower.name))
                                 game.dec_money(phtower.cost)
                                 # Only exit placement mode if placement was successful or canceled
