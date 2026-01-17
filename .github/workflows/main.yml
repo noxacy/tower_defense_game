@@ -27,26 +27,35 @@ jobs:
       - name: Build and Organize All Games
         run: |
           mkdir -p deploy
-          cp ads.txt privacy.html terms.html about.html contact.html deploy/ 2>/dev/null || true
+          cp index.html ads.txt privacy.html terms.html about.html contact.html deploy/
           
           for dir in */; do
             dirname=${dir%/}
-            if [ "$dirname" == "deploy" ] || [ "$dirname" == ".github" ]; then continue; fi
+            
+            if [ "$dirname" == "deploy" ] || [ "$dirname" == ".github" ]; then
+              continue
+            fi
 
             if [ -f "$dirname/main.py" ]; then
-              echo "Building: $dirname"
+              echo "Building game in folder: $dirname"
+              
               python -m pygbag --build "$dirname/"
               
-              # HATA BURADAYDI: Ayırıcı olarak '@' kullanıyoruz ki JS içindeki '/' ile karışmasın
-              # 1. DOCTYPE ekle
-              sed -i '1i <!DOCTYPE html>' "$dirname/build/web/index.html"
-              
-              # 2. Navigator Yaması (Ayırıcı karakter olarak @ seçildi)
-              PATCH_SCRIPT='<script>if(!navigator.userAgentData){navigator.userAgentData={mobile:/Android|iPhone|iPad/i.test(navigator.userAgent),platform:navigator.platform};}</script>'
-              sed -i "s@</head>@${PATCH_SCRIPT}</head>@" "$dirname/build/web/index.html"
-
               mkdir -p "deploy/$dirname"
               cp -r "$dirname/build/web/"* "deploy/$dirname/"
+
+              sed -i '1i <!DOCTYPE html>' "$dirname/build/web/index.html"
+              
+              # --- THE FIX STARTS HERE ---
+              # Copy the thumbnail and any other images from the game folder
+              # '|| true' prevents the script from crashing if no images exist
+              cp "$dirname"/*.png "deploy/$dirname/" 2>/dev/null || true
+              cp "$dirname"/*.jpg "deploy/$dirname/" 2>/dev/null || true
+              # --- THE FIX ENDS HERE ---
+
+              if [ -f "$dirname/${dirname}_play.html" ]; then
+                cp "$dirname/${dirname}_play.html" "deploy/$dirname/"
+              fi
             fi
           done
 
