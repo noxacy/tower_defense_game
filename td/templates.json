@@ -511,7 +511,7 @@
             "maxhealth": 150,
             "size": 25,
             "color": "#ff00ff",
-            "speed": 300
+            "speed": 200
         },
         "Doomsday": {
             "maxhealth": 15000,

@@ -611,7 +611,7 @@ def events(dt):
                         gui = 0
                 if game.speed_button_rect.collidepoint(e.pos):
                     # Cycle through 1x -> 2x -> 3x -> 1x
-                    game.speed_multiplier = game.speed_multiplier + 1 if game.speed_multiplier < 3 else 1
+                    game.speed_multiplier = game.speed_multiplier + 1 if game.speed_multiplier < 5 else 1
         elif e.type == pygame.MOUSEWHEEL:
             if e.y > 0:
                 shopy -= 35
