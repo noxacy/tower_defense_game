@@ -2067,9 +2067,4 @@ async def main():
         pygame.display.flip()
         await asyncio.sleep(0)
 
-if platform.system() == "Emscripten":
-    # pygbag / web
-    asyncio.ensure_future(main())
-else:
-    # normal desktop
-    asyncio.run(main())
+asyncio.run(main())
