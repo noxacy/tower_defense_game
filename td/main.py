@@ -1,4 +1,5 @@
-import pygame, json, os, asyncio, random
+import pygame, json, os, asyncio, random, math, platform
+IS_MOBILE = platform.system() == "Emscripten" or hasattr(pygame, "FINGERDOWN")
 pygame.init()
 Info = pygame.display.Info()
 W, H = 1920, 1080
@@ -82,7 +83,7 @@ class Game:
     def __init__(self):
         global gui, route
         self.map = [(W/4, H), (W/4, H/5), (W/4*3, H/5), (W/4*3, H/5*4), (W/2, H/5*4), (W/2, H/5*2), (W, H/5*2)]
-        self.money = 550
+        self.money = 5500
         self.text_cache = {}
         self.waittime = 0
         self.quant = 0
@@ -91,6 +92,9 @@ class Game:
         self.end = False
         self.skip = False
         self.candrawskip = False
+        self.last_tap_time = 0
+        self.double_tap_threshold = 0.3  # Seconds
+        self.touch_start_y = 0
 
     def get_ev(self):
         tmp = route[f"wave{self.wave}"]
@@ -110,6 +114,14 @@ class Game:
                 if self.wave > 0:
                     prev_wave_data = route[f"wave{self.wave}"]
                     self.inc_money(prev_wave_data[-1][1])
+                    for t in towers:
+                        if hasattr(t, 'attributes') and t.attributes.get("money_tower", False):
+                            # Gelir olarak 'damage' değerini kullanıyoruz
+                            self.inc_money(t.dmg)
+                            
+                            # Görsel efekt: Kulenin üzerinde yeşil bir halka çıkar
+                            obj = [["#00ff00", t.rect.center, 40], 0.6]
+                            temporary.append(obj)
                 self.wave += 1
                 current_wave_key = f"wave{self.wave}"
                 if current_wave_key not in route:
@@ -314,6 +326,9 @@ class Tower:
             self.cost = full["cost"]
             self.sellprice = self.cost
             self.maxlvl = len(self.upgs)
+            self.aoeangle = full.get("aoeangle", 0)
+            self.angle = 0  # Kulenin o an baktığı yön
+            self.is_money_tower = self.attributes.get("money_tower", False)
         else:
             raise ValueError(f"\"{tower}\" tower not in tower templates.")
 
@@ -352,23 +367,55 @@ class Tower:
         return objs
 
     def update(self, dt, enemies):
-        if self.dmgtype == "normal" or self.dmgtype == "splash":
-            if self.waittime > 0:
-                self.waittime -= dt
+        if self.waittime > 0:
+            self.waittime -= dt
+            
+        elist = self.get_in_range(enemies)
+        
+        if len(elist) > 0:
+            # Bakılacak hedefi seç (Açı için şart)
+            if self.mode == "first":
+                theone_data = max(elist, key=lambda x: x[0].process)
+            elif self.mode == "strongest":
+                theone_data = max(elist, key=lambda x: x[0].maxhp)
+            
+            target_enemy = theone_data[0]
+
+            # Açı güncelleme (Pygame koordinatları için -dy)
+            dx = target_enemy.x - self.x
+            dy = target_enemy.y - self.y
+            self.angle = math.degrees(math.atan2(-dy, dx))
+
             if self.waittime <= 0:
-                elist = self.get_in_range(enemies)
-                if len(elist) > 0:
-                    if self.mode == "first":
-                        theone_data = max(elist, key=lambda x: x[0].process)
-                        target_enemy = theone_data[0]
-                    elif self.mode == "strongest":
-                        theone_data = max(elist, key=lambda x: x[0].maxhp)
-                        target_enemy = theone_data[0]
-                    if self.dmgtype == "normal":
-                        target_enemy.take_damage(self.dmg)
-                        self.totaldmg += self.dmg
-                    elif self.dmgtype == "splash":
-                        projectiles.append(BlastProjectile(target_enemy.x, target_enemy.y, self.x, self.y, self.radius, self.dmg, "#00ffff", 25, self))
+                # --- AOE Vuruş ---
+                if self.aoeangle > 0:
+                    for e_data in elist:
+                        enemy = e_data[0]
+                        edx = enemy.x - self.x
+                        edy = enemy.y - self.y
+                        e_angle = math.degrees(math.atan2(-edy, edx))
+                        
+                        # Açı farkı normalleştirme
+                        diff = (e_angle - self.angle + 180) % 360 - 180
+                        if abs(diff) <= self.aoeangle / 2:
+                            enemy.take_damage(self.dmg)
+                            self.totaldmg += self.dmg
+                    self.waittime = self.frate # Cooldown başlat
+                
+                # --- Normal Tekli Vuruş ---
+                elif self.dmgtype == "normal":
+                    target_enemy.take_damage(self.dmg)
+                    self.totaldmg += self.dmg
+                    self.waittime = self.frate
+                
+                # --- Splash (Roket) Vuruş ---
+                elif self.dmgtype == "splash":
+                    projectiles.append(BlastProjectile(
+                        target_enemy.x, target_enemy.y, 
+                        self.x, self.y, 
+                        self.radius, self.dmg, 
+                        "#00ffff", 25, self
+                    ))
                     self.waittime = self.frate
 
     def sell(self):
@@ -413,41 +460,44 @@ def events(dt):
                         gui = 0
                     else:
                         gui = 1
-            elif e.key == pygame.K_1:
-                enemies.append(Enemy("Normal"))
-            elif e.key == pygame.K_2:
-                enemies.append(Enemy("Swift"))
-            elif e.key == pygame.K_3:
-                enemies.append(Enemy("Heavy"))
-            elif e.key == pygame.K_4:
-                enemies.append(Enemy("Leader"))
-            elif e.key == pygame.K_5:
-                enemies.append(Enemy("Shadow"))
-            elif e.key == pygame.K_6:
-                enemies.append(Enemy("Witch"))
-            elif e.key == pygame.K_7:
-                enemies.append(Enemy("Myth"))
-            elif e.key == pygame.K_8:
-                enemies.append(Enemy("Healthy"))
-            elif e.key == pygame.K_9:
-                enemies.append(Enemy("Lightspeed"))
-            elif e.key == pygame.K_0:
-                enemies.append(Enemy("Slime"))
-            elif e.key == pygame.K_F1:
-                enemies.append(Enemy("Goo"))
-            elif e.key == pygame.K_F2:
-                enemies.append(Enemy("CEO"))
-            elif e.key == pygame.K_F3:
-                enemies.append(Enemy("Normaler"))
-            elif e.key == pygame.K_F4:
-                enemies.append(Enemy("Mythic"))
-            elif e.key == pygame.K_F5:
-                enemies.append(Enemy("Shadow Leader"))
             elif e.key == pygame.K_q:
                 if gui == 2:
                     placing_tower = False
                     phtower = 0
                     gui = 0
+# --- MOBILE TOUCH SUPPORT ---
+        elif hasattr(pygame, "FINGERDOWN") and e.type == pygame.FINGERDOWN:
+            # Convert mobile 0.0-1.0 to pixel coordinates
+            tx, ty = e.x * W, e.y * H
+            curr_time = pygame.time.get_ticks() / 1000.0
+            
+            if gui == 1: # Start scroll tracking
+                self.touch_start_y = ty
+                # Check for shop selection
+                relative_mpos = (tx - shop_rect.x, ty - shop_rect.y)
+                for tower_button in shop_button_copies:
+                    if tower_button[1].collidepoint(relative_mpos):
+                        phtower = placeholderTower(tower_button[2])
+                        if game.money >= phtower.cost:
+                            gui = 2
+                            placing_tower = True
+            
+            elif gui == 2: # Double Tap to Place (Mobile Only)
+                if curr_time - game.last_tap_time < 0.3:
+                    if not tower_cancel_rect.collidepoint((tx, ty)):
+                        towers.append(Tower(tx, ty, phtower.name))
+                        game.dec_money(phtower.cost)
+                    phtower = 0
+                    placing_tower = False
+                    gui = 0
+                game.last_tap_time = curr_time
+
+        elif hasattr(pygame, "FINGERMOTION") and e.type == pygame.FINGERMOTION:
+            if gui == 1: # Swipe to Scroll
+                shopy -= e.dy * H 
+                shopy = max(0, min(shopy, shopmaxy))
+
+        # --- ORIGINAL PC MOUSE LOGIC (Untouched) ---
         elif e.type == pygame.MOUSEBUTTONDOWN:
             if e.button == 1:
                 if skip_wave_rect.collidepoint(e.pos):
@@ -481,7 +531,7 @@ def events(dt):
                 elif gui == 2:
                     if phtower != 0:
                         if not tower_cancel_rect.collidepoint(e.pos):
-                            towers.append(Tower(mpos[0], mpos[1], phtower.name))
+                            towers.append(Tower(e.pos[0], e.pos[1], phtower.name))
                             game.dec_money(phtower.cost)
                         phtower = 0
                         placing_tower = False
@@ -563,6 +613,27 @@ def draw(dt):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
                 game.cached_draw(w, font1, f"{t.name}", "#ffffff", (mx, my-H/30), True)
                 pygame.draw.circle(w, (255, 255, 255), t.rect.center, t.range, 10)
+                if t.aoeangle > 0:
+                    r = t.range
+                    cap = r * 2
+                    # Yayın tam düşmana bakması için: merkez_açı - (toplam_açı / 2)
+                    start_angle = t.angle - (t.aoeangle / 2)
+                    end_angle = t.angle + (t.aoeangle / 2)
+                    
+                    alan = (t.rect.centerx - r, t.rect.centery - r, cap, cap)
+                    
+                    # Yayı çiz
+                    pygame.draw.arc(w, "#ffff00", alan, math.radians(start_angle), math.radians(end_angle), 5)
+                    
+                    # 1. Çizgi: Başlangıç açısı kolu
+                    p1 = (t.rect.centerx + r * math.cos(math.radians(start_angle)), 
+                        t.rect.centery - r * math.sin(math.radians(start_angle)))
+                    pygame.draw.line(w, "#ffff00", t.rect.center, p1, 5)
+                    
+                    # 2. Çizgi: Bitiş açısı kolu
+                    p2 = (t.rect.centerx + r * math.cos(math.radians(end_angle)), 
+                        t.rect.centery - r * math.sin(math.radians(end_angle)))
+                    pygame.draw.line(w, "#ffff00", t.rect.center, p2, 5)
                 break
     elif gui == 1:
         shop_surf.fill("#707070")
@@ -614,9 +685,44 @@ def draw(dt):
                 else:
                     game.cached_draw(w, font2, "MAX LEVEL", "#ffffff", (mx, my), True)
                 game.cached_draw(w, font1, f"{t.name}", "#ffffff", (mx, my-H/30), True)
+        if selected.aoeangle > 0:
+            r = selected.range
+            cap = r * 2
+            # Yayın tam düşmana bakması için: merkez_açı - (toplam_açı / 2)
+            start_angle = selected.angle - (selected.aoeangle / 2)
+            end_angle = selected.angle + (selected.aoeangle / 2)
+            
+            alan = (selected.rect.centerx - r, selected.rect.centery - r, cap, cap)
+            
+            # Yayı çiz
+            pygame.draw.arc(w, "#ffff00", alan, math.radians(start_angle), math.radians(end_angle), 5)
+            
+            # 1. Çizgi: Başlangıç açısı kolu
+            p1 = (selected.rect.centerx + r * math.cos(math.radians(start_angle)), 
+                selected.rect.centery - r * math.sin(math.radians(start_angle)))
+            pygame.draw.line(w, "#ffff00", selected.rect.center, p1, 5)
+            
+            # 2. Çizgi: Bitiş açısı kolu
+            p2 = (selected.rect.centerx + r * math.cos(math.radians(end_angle)), 
+                selected.rect.centery - r * math.sin(math.radians(end_angle)))
+            pygame.draw.line(w, "#ffff00", selected.rect.center, p2, 5)
+# --- BOSS HP BAR ADJUSTMENT ---
+    for e in enemies:
+        if e.name == "The Singularity":
+            bar_width = W // 2
+            bar_height = 40
+            bar_x = (W - bar_width) // 2
+            bar_y = 80
+            # Background
+            pygame.draw.rect(w, (50, 50, 50), (bar_x, bar_y, bar_width, bar_height))
+            # Health fill
+            fill = (e.hp / e.maxhp) * bar_width
+            pygame.draw.rect(w, (200, 0, 0), (bar_x, bar_y, fill, bar_height))
+            # Text
+            game.cached_draw(w, font2, f"FINAL BOSS: {int(e.hp)} / {e.maxhp}", "#ffffff", (W//2, bar_y + 20), True)
     game.cached_draw(w, font1, f"{game.money}$", "#00ff00", (W/2, 50), True)
-    game.cached_draw(w, font1, f"Wave: {game.wave}", "#00ff00", (W/4*3, 50), True)
-    game.cached_draw(w, font1, f"Health: {base.hp} / {base.maxhp}", "#00ff00", (W/4, 50), True)
+    game.cached_draw(w, font1, f"Wave: {game.wave}", "#00ff00", (W- W/6, 50), True)
+    game.cached_draw(w, font1, f"Health: {base.hp} / {base.maxhp}", "#00ff00", (W/6, 50), True)
     pygame.display.flip()
 
 async def main():

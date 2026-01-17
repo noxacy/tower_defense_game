@@ -11,8 +11,8 @@
             "upgrades":
             [
                 {
-                "damage": 2,
-                "name": "Better Weapon",
+                    "damage": 2,
+                    "name": "Better Weapon",
                     "desc": "Increases damage",
                     "price": 200
                 },
@@ -34,6 +34,13 @@
                     "name": "X-Ray vision",
                     "desc": "Hidden detection",
                     "price": 1100
+                },
+                {
+                    "range": 800,
+                    "name": "Radio Tower",
+                    "desc": "Hidden detection",
+                    "price": 2500,
+                    "damage": 3
                 }
             ]
         },
@@ -94,7 +101,7 @@
                     "name": "Better vision",
                     "desc": "Increases range and damage",
                     "range": 1050,
-                    "damage": 12,
+                    "damage": 20,
                     "price": 1500
                 },
                 {
@@ -106,7 +113,7 @@
                 {
                     "name": "Deadly death machine",
                     "desc": "Increases damage heavily",
-                    "damage": 40,
+                    "damage": 80,
                     "price": 7000
                 }
             ]
@@ -143,6 +150,13 @@
                     "firerate": 0.25,
                     "desc": "Increases firerate",
                     "price": 5500
+                },
+                {
+                    "name": "Beatdown",
+                    "firerate": 0.1,
+                    "desc": "Increases firerate",
+                    "price": 8500,
+                    "damage": 5
                 }
             ]
         },
@@ -178,11 +192,11 @@
                 }
             ]
         },
-        "Tatorista":
+        "Bomber":
         {
             "damage": 3,
             "range": 300,
-            "firerate": 5,
+            "firerate": 4,
             "color": "#ffffff",
             "cost": 800,
             "blastradius": 150,
@@ -190,16 +204,48 @@
             "upgrades":
             [
                 {
-                    "name": "Run to Turkey",
+                    "name": "Better Grenade",
                     "desc": "Increases damage",
                     "price": 1000,
                     "damage": 5
                 },
                 {
-                    "name": "Run to Iraq",
+                    "name": "Even Better Grenade",
                     "desc": "Increases range",
                     "price": 1500,
                     "range": 400
+                },
+                {
+                    "name": "Fast Loader",
+                    "desc": "Increases firerate",
+                    "price": 2000,
+                    "firerate": 2.5
+                },
+                {
+                    "name": "Nuclear Core",
+                    "desc": "Increases damage, range",
+                    "price": 6000,
+                    "damage": 25,
+                    "range": 500
+                }
+            ]
+        },
+        "Flamethrower": {
+            "damage": 1,
+            "firerate": 0.25,
+            "range": 300,
+            "color": "#ff4500",
+            "cost": 1200,
+            "aoeangle": 60,
+            "attributes": {
+                "damage_type": "normal"
+            },
+            "upgrades": [
+                {
+                    "price": 1500,
+                    "name": "Hotter Flame",
+                    "desc": "Increased damage",
+                    "damage": 2
                 }
             ]
         },
@@ -209,7 +255,7 @@
             "range": 0,
             "firerate": 0,
             "color": "#ffffff",
-            "cost": 350,
+            "cost": 600,
             "attributes": {"money_tower": true},
             "upgrades":
             [
@@ -222,7 +268,107 @@
                 {
                     "name": "More veggies",
                     "desc": "Increases income",
-                    "price": 1500
+                    "price": 1500,
+                    "damage": 300
+                }
+            ]
+        },
+        "Turret": {
+            "damage": 10,
+            "firerate": 1.5,
+            "range": 400,
+            "color": "#4a4a4a",
+            "cost": 1100,
+            "upgrades": [
+                {
+                    "name": "Caliber Up",
+                    "desc": "Increased damage",
+                    "price": 800,
+                    "damage": 25
+                },
+                {
+                    "name": "Twin Barrel",
+                    "desc": "Faster firing",
+                    "price": 1500,
+                    "firerate": 0.8
+                },
+                {
+                    "name": "Heavy Ordnance",
+                    "desc": "Massive damage for bosses",
+                    "price": 4000,
+                    "damage": 80
+                }
+            ]
+        },
+        "Tesla": {
+            "damage": 2,
+            "firerate": 0.5,
+            "range": 350,
+            "color": "#00ffff",
+            "cost": 1400,
+            "aoeangle": 60,
+            "attributes": {"damage_type": "aoe"},
+            "upgrades": [
+                {
+                    "name": "Overcharge",
+                    "desc": "Increased damage",
+                    "price": 1200,
+                    "damage": 5
+                },
+                {
+                    "name": "Superconductor",
+                    "desc": "Massive range increase",
+                    "price": 2200,
+                    "range": 550
+                }
+            ]
+        },
+        "Minigunner": {
+            "damage": 1,
+            "firerate": 0.1,
+            "range": 450,
+            "color": "#556b2f",
+            "cost": 4500,
+            "upgrades": [
+                {
+                    "name": "Hardened Bullets",
+                    "desc": "Slight damage increase",
+                    "price": 3000,
+                    "damage": 2
+                },
+                {
+                    "name": "Laser Sight",
+                    "desc": "Range and detection",
+                    "price": 2500,
+                    "range": 600,
+                    "detection": true
+                },
+                {
+                    "name": "Vulkan Engine",
+                    "desc": "Extreme fire rate",
+                    "price": 15000,
+                    "firerate": 0.04
+                }
+            ]
+        },
+        "Sentry": {
+            "damage": 1,
+            "firerate": 0.8,
+            "range": 300,
+            "color": "#c0c0c0",
+            "cost": 400,
+            "upgrades": [
+                {
+                    "name": "Sensor Boost",
+                    "desc": "Early detection",
+                    "price": 300,
+                    "detection": true
+                },
+                {
+                    "name": "Rapid Fire",
+                    "desc": "Faster shooting",
+                    "price": 500,
+                    "firerate": 0.4
                 }
             ]
         }
@@ -311,7 +457,7 @@
             "color": "#97ee7d",
             "speed": 100
         },
-        "CEO":
+        "Tank":
         {
             "maxhealth": 3500,
             "size": 100,
@@ -340,6 +486,49 @@
             "color": "#08101f",
             "speed": 40,
             "hidden": true
+        },
+        "Phalanx": {
+            "maxhealth": 800,
+            "size": 50,
+            "color": "#4b0082",
+            "speed": 25
+        },
+        "Ghost": {
+            "maxhealth": 200,
+            "size": 30,
+            "color": "#ffffff",
+            "speed": 120,
+            "hidden": true
+        },
+        "Overlord": {
+            "maxhealth": 5000,
+            "size": 110,
+            "color": "#000000",
+            "speed": 8,
+            "attributes": {"spawn": {"name": "Shadow", "cooldown": 5, "quantity": 2, "spawnrate": 1}}
+        },
+        "Hyper Swift": {
+            "maxhealth": 150,
+            "size": 25,
+            "color": "#ff00ff",
+            "speed": 300
+        },
+        "Doomsday": {
+            "maxhealth": 15000,
+            "size": 130,
+            "color": "#ff0000",
+            "speed": 5,
+            "attributes": {"death_spawn": ["CEO", "Shadow Leader", "Witch"]}
+        },
+        "The Singularity": {
+            "maxhealth": 500000,
+            "size": 150,
+            "color": "#1a0033",
+            "speed": 3,
+            "attributes": {
+                "spawn": {"name": "Hyper Swift", "cooldown": 3, "quantity": 5, "spawnrate": 1},
+                "death_spawn": ["Overlord", "CEO", "CEO", "CEO", "Shadow Leader"]
+            }
         }
     },
     "route":
@@ -458,7 +647,7 @@
         ,
         "wave20":
         [
-            {"name": "CEO", "quantity": 1, "cooldown": 5},
+            {"name": "Tank", "quantity": 1, "cooldown": 5},
             [90,750]
         ]
         ,
@@ -513,7 +702,7 @@
         ,
         "wave28":
         [
-            {"name": "CEO", "quantity": 2, "cooldown": 15},
+            {"name": "Tank", "quantity": 2, "cooldown": 15},
             [90,750]
         ]
         ,
@@ -524,10 +713,26 @@
             [70,750]
         ]
         ,
-        "wave30":
-        [
-            {"name": "Shadow Leader", "quantity": 1, "cooldown": 10},
-            [70,750]
-        ]
+        "wave30": [{"name": "Shadow Leader", "quantity": 1, "cooldown": 10}, [70, 750]],
+        "wave31": [{"name": "Normaler", "quantity": 30, "cooldown": 0.5}, [30, 800]],
+        "wave32": [{"name": "Ghost", "quantity": 10, "cooldown": 1.5}, [30, 850]],
+        "wave33": [{"name": "Phalanx", "quantity": 5, "cooldown": 3}, [40, 900]],
+        "wave34": [{"name": "Shadow Leader", "quantity": 2, "cooldown": 8}, [40, 1000]],
+        "wave35": [{"name": "Slime", "quantity": 15, "cooldown": 1}, [40, 1100]],
+        "wave36": [{"name": "Hyper Swift", "quantity": 20, "cooldown": 0.5}, [30, 1200]],
+        "wave37": [{"name": "Healthy", "quantity": 20, "cooldown": 1}, [40, 1300]],
+        "wave38": [{"name": "Witch", "quantity": 5, "cooldown": 5}, [50, 1400]],
+        "wave39": [{"name": "Mythic", "quantity": 15, "cooldown": 2}, [50, 1500]],
+        "wave40": [{"name": "Overlord", "quantity": 1, "cooldown": 1}, [80, 5000]],
+        "wave41": [{"name": "Ghost", "quantity": 30, "cooldown": 0.5}, [40, 1600]],
+        "wave42": [{"name": "Phalanx", "quantity": 15, "cooldown": 1}, [50, 1700]],
+        "wave43": [{"name": "CEO", "quantity": 3, "cooldown": 10}, [60, 2000]],
+        "wave44": [{"name": "Hyper Swift", "quantity": 50, "cooldown": 0.2}, [40, 2500]],
+        "wave45": [{"name": "Shadow Leader", "quantity": 10, "cooldown": 4}, [60, 3000]],
+        "wave46": [{"name": "Witch", "quantity": 10, "cooldown": 3}, [60, 3000]],
+        "wave47": [{"name": "Overlord", "quantity": 3, "cooldown": 15}, [70, 5000]],
+        "wave48": [{"name": "Mythic", "quantity": 25, "cooldown": 1}, [70, 5000]],
+        "wave49": [{"name": "CEO", "quantity": 10, "cooldown": 5}, [80, 8000]],
+        "wave50": [{"name": "The Singularity", "quantity": 1, "cooldown": 1}, [100, 0]]
     }
 }
