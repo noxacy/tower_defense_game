@@ -165,6 +165,7 @@ class Game:
     def game_over(self):
         global gui
         gui = 5
+        pygame.quit()
 
     def inc_money(self, amount):
         self.money += amount
